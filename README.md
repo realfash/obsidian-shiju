@@ -8,6 +8,12 @@ Shiju is a mobile-first Obsidian plugin for capturing a thought quickly and appe
 
 The name `拾句` means "pick up a line". It is built for the moment when an idea appears on your phone and you want to save it first, then organize it later.
 
+## 图标与截图 Icon and Screenshot
+
+![Shiju icon](./assets/shiju-icon.svg)
+
+![Shiju on iPhone](./assets/mobile-capture-iphone.png)
+
 ## 功能 Features
 
 - 在手机端打开一个大号速记面板
