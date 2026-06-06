@@ -3,6 +3,7 @@ import { appendCaptureToDailyNote, notifyWriteError } from "./insertion";
 import { ensureDailyNote } from "./daily-note";
 import type MobileDailyCapturePlugin from "../main";
 import type { MobileDailyCaptureSettings } from "./types";
+import { t } from "./i18n";
 
 type ToolbarAction = {
   label: string;
@@ -28,14 +29,15 @@ export class MobileCaptureModal extends Modal {
 
   onOpen(): void {
     const { contentEl, modalEl } = this;
+    const copy = t(this.plugin.settings);
     modalEl.addClass("mobile-daily-capture-modal");
 
-    this.setTitle("速记");
+    this.setTitle(copy.modalTitle);
 
     contentEl.empty();
     contentEl.createDiv({
       cls: "mobile-daily-capture-hint",
-      text: "先记下来，稍后再整理。内容会自动追加到今天的每日笔记。",
+      text: copy.modalHint,
     });
 
     const toolbar = contentEl.createDiv({ cls: "mobile-daily-capture-toolbar" });
@@ -66,27 +68,27 @@ export class MobileCaptureModal extends Modal {
 
     this.textAreaEl = contentEl.createEl("textarea", {
       attr: {
-        placeholder: "记录今天的想法、事项或灵感...",
+        placeholder: copy.inputPlaceholder,
       },
     });
 
     const footer = contentEl.createDiv({ cls: "mobile-daily-capture-footer" });
 
     new ButtonComponent(footer)
-      .setButtonText("取消")
+      .setButtonText(copy.cancel)
       .onClick(() => {
         this.close();
       });
 
     this.saveAndContinueButton = new ButtonComponent(footer)
-      .setButtonText("保存并继续")
+      .setButtonText(copy.saveAndContinue)
       .setCta()
       .onClick(() => {
         void this.handleSave(true);
       });
 
     this.saveButton = new ButtonComponent(footer)
-      .setButtonText("保存")
+      .setButtonText(copy.save)
       .setCta()
       .onClick(() => {
         void this.handleSave(false);
@@ -100,9 +102,10 @@ export class MobileCaptureModal extends Modal {
   }
 
   private async handleSave(keepOpen: boolean): Promise<void> {
+    const copy = t(this.plugin.settings);
     const value = this.textAreaEl.value.trim();
     if (!value) {
-      new Notice("先输入一点内容再保存。");
+      new Notice(copy.saveEmptyNotice);
       this.textAreaEl.focus();
       return;
     }
@@ -117,7 +120,7 @@ export class MobileCaptureModal extends Modal {
         await this.app.workspace.getLeaf(true).openFile(file);
       }
 
-      new Notice("已追加到今天的每日笔记。");
+      new Notice(copy.saveSuccessNotice);
 
       if (keepOpen) {
         this.textAreaEl.value = "";
@@ -160,15 +163,16 @@ export class MobileCaptureModal extends Modal {
   }
 
   private getToolbarActions(): ToolbarAction[] {
+    const copy = t(this.plugin.settings);
     const headingLevel = Number(this.plugin.settings.markdownHeadingLevel || "2");
     const headingPrefix = `${"#".repeat(headingLevel)} `;
 
     return [
       {
-        label: "标题",
-        title: `插入 H${headingLevel} 标题`,
+        label: copy.toolbarHeadingLabel,
+        title: copy.toolbarHeadingTitle(headingLevel),
         insert: (selectedText) => {
-          const text = selectedText || "标题";
+          const text = selectedText || copy.toolbarHeadingPlaceholder;
           return {
             text: `${headingPrefix}${text}`,
             selectionStart: headingPrefix.length,
@@ -177,10 +181,10 @@ export class MobileCaptureModal extends Modal {
         },
       },
       {
-        label: "加粗",
-        title: "插入加粗",
+        label: copy.toolbarBoldLabel,
+        title: copy.toolbarBoldTitle,
         insert: (selectedText) => {
-          const text = selectedText || "重点";
+          const text = selectedText || copy.toolbarBoldPlaceholder;
           return {
             text: `**${text}**`,
             selectionStart: 2,
@@ -189,10 +193,10 @@ export class MobileCaptureModal extends Modal {
         },
       },
       {
-        label: "列表",
-        title: "插入无序列表",
+        label: copy.toolbarBulletLabel,
+        title: copy.toolbarBulletTitle,
         insert: (selectedText) => {
-          const text = selectedText || "列表项";
+          const text = selectedText || copy.toolbarBulletPlaceholder;
           return {
             text: `- ${text}`,
             selectionStart: 2,
@@ -201,10 +205,10 @@ export class MobileCaptureModal extends Modal {
         },
       },
       {
-        label: "有序",
-        title: "插入有序列表",
+        label: copy.toolbarOrderedLabel,
+        title: copy.toolbarOrderedTitle,
         insert: (selectedText) => {
-          const text = selectedText || "列表项";
+          const text = selectedText || copy.toolbarOrderedPlaceholder;
           return {
             text: `1. ${text}`,
             selectionStart: 3,
@@ -213,10 +217,10 @@ export class MobileCaptureModal extends Modal {
         },
       },
       {
-        label: "标签",
-        title: "插入标签",
+        label: copy.toolbarTagLabel,
+        title: copy.toolbarTagTitle,
         insert: (selectedText) => {
-          const text = selectedText || "标签";
+          const text = selectedText || copy.toolbarTagPlaceholder;
           return {
             text: `#${text}`,
             selectionStart: 1,

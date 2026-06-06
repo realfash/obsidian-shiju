@@ -1,5 +1,6 @@
 import { Notice, Plugin } from "obsidian";
 import { MobileCaptureModal } from "./src/capture-modal";
+import { t } from "./src/i18n";
 import { DEFAULT_SETTINGS, MobileDailyCaptureSettingTab } from "./src/settings";
 import type { MobileDailyCaptureSettings } from "./src/types";
 
@@ -8,14 +9,15 @@ export default class MobileDailyCapturePlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
+    const copy = t(this.settings);
 
-    this.addRibbonIcon("square-pen", "打开速记", () => {
+    this.addRibbonIcon("square-pen", copy.openCapture, () => {
       void this.openCaptureModal();
     });
 
     this.addCommand({
       id: "open-mobile-capture",
-      name: "打开速记",
+      name: copy.openCapture,
       callback: () => {
         void this.openCaptureModal();
       },
@@ -38,7 +40,7 @@ export default class MobileDailyCapturePlugin extends Plugin {
       modal.open();
     } catch (error) {
       console.error("Failed to open mobile capture modal", error);
-      new Notice("无法打开速记面板。");
+      new Notice(t(this.settings).openCaptureError);
     }
   }
 }

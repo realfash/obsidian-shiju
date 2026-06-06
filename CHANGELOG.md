@@ -4,6 +4,17 @@ All notable changes to 拾句 Shiju will be documented in this file.
 
 The format follows a simple Keep a Changelog style and uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Added a language preference setting with `Auto`, `中文`, and `English`
+- Added English UI support for the modal, toolbar, buttons, notices, and settings
+
+### Changed
+
+- Unified plugin copy through a shared i18n layer so interface text switches consistently
+
 ## [0.2.0] - 2026-06-06
 
 ### Added
@@ -23,4 +34,3 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 - Fixed daily note path token replacement so folder names like `Daily` are not corrupted
 - Fixed iPhone toolbar styling by applying stronger runtime layout control
-

@@ -1,6 +1,8 @@
 export type CaptureWriteMode = "plain" | "bullet" | "task";
+export type LanguagePreference = "auto" | "zh" | "en";
 
 export interface MobileDailyCaptureSettings {
+  language: LanguagePreference;
   dailyNotePathFormat: string;
   dailyNoteTemplatePath: string;
   targetHeading: string;
