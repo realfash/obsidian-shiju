@@ -1,5 +1,6 @@
 node_modules/
 .DS_Store
+main.js
 
 # Local build leftovers
 dist/

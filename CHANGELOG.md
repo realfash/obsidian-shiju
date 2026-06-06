@@ -14,6 +14,8 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 ### Changed
 
 - Unified plugin copy through a shared i18n layer so interface text switches consistently
+- Changed the public manifest display name to `Shiju`
+- Stopped tracking generated `main.js` in the repository default branch
 
 ## [0.2.0] - 2026-06-06
 

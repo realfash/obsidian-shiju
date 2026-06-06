@@ -4,7 +4,7 @@ This project is almost ready for a public Obsidian plugin release. Use this file
 
 ## Current Identity
 
-- Plugin name: `拾句 Shiju`
+- Plugin name: `Shiju`
 - Plugin id: `shiju`
 - Current version: `0.2.0`
 - Release assets: root-level `manifest.json`, `main.js`, `styles.css`
@@ -30,7 +30,6 @@ Files that must stay in sync during a release:
 2. Keep the repository root clean:
    - `manifest.json`
    - `main.ts`
-   - `main.js`
    - `styles.css`
    - `README.md`
    - `LICENSE`
