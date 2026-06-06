@@ -6,6 +6,8 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-06
+
 ### Added
 
 - Added a language preference setting with `Auto`, `中文`, and `English`
