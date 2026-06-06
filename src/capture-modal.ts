@@ -41,29 +41,16 @@ export class MobileCaptureModal extends Modal {
     });
 
     const toolbar = contentEl.createDiv({ cls: "mobile-daily-capture-toolbar" });
-    toolbar.style.display = "grid";
-    toolbar.style.gridTemplateColumns = "repeat(5, minmax(0, 1fr))";
-    toolbar.style.gap = "0.3rem";
-    toolbar.style.width = "100%";
 
     this.getToolbarActions().forEach((action) => {
       const button = new ButtonComponent(toolbar);
+      button.buttonEl.addClass("mobile-daily-capture-toolbar-button");
       button
         .setButtonText(action.label)
         .setTooltip(action.title)
         .onClick(() => {
           this.insertMarkdown(action);
         });
-
-      button.buttonEl.style.width = "100%";
-      button.buttonEl.style.minWidth = "0";
-      button.buttonEl.style.minHeight = "32px";
-      button.buttonEl.style.padding = "0.16rem 0.08rem";
-      button.buttonEl.style.borderRadius = "8px";
-      button.buttonEl.style.fontSize = "0.78rem";
-      button.buttonEl.style.lineHeight = "1.1";
-      button.buttonEl.style.whiteSpace = "nowrap";
-      button.buttonEl.style.textAlign = "center";
     });
 
     this.textAreaEl = contentEl.createEl("textarea", {
