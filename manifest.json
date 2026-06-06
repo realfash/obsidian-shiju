@@ -1,0 +1,10 @@
+{
+  "id": "shiju",
+  "name": "拾句 Shiju",
+  "version": "0.2.0",
+  "minAppVersion": "1.5.0",
+  "description": "Mobile-first quick capture into daily notes.",
+  "author": "realfash",
+  "authorUrl": "https://github.com/realfash",
+  "isDesktopOnly": false
+}
