@@ -9,6 +9,21 @@ This project is almost ready for a public Obsidian plugin release. Use this file
 - Current version: `0.2.0`
 - Release assets: root-level `manifest.json`, `main.js`, `styles.css`
 
+## Versioning
+
+Use semantic versioning:
+
+- `patch` like `0.2.1`: bug fixes, copy tweaks, layout fixes, small internal improvements
+- `minor` like `0.3.0`: new user-facing features, new settings, new capture behaviors
+- `major` like `1.0.0`: stable public milestone or intentionally breaking changes
+
+Files that must stay in sync during a release:
+
+- `manifest.json`
+- `package.json`
+- `versions.json`
+- `CHANGELOG.md`
+
 ## Before Publishing
 
 1. Move the plugin into its own GitHub repository
@@ -35,18 +50,30 @@ This project is almost ready for a public Obsidian plugin release. Use this file
 
 For each public version:
 
-1. Update `manifest.json`, `package.json`, and `versions.json`
+1. Update `manifest.json`, `package.json`, `versions.json`, and `CHANGELOG.md`
 2. Run:
 
 ```bash
 npm run build
 ```
 
-3. Create a GitHub release tag that exactly matches the plugin version
-4. Upload these assets to the release:
+3. Commit the version bump
+4. Create a GitHub release tag that exactly matches the plugin version
+5. Upload these assets to the release:
    - `manifest.json`
    - `main.js`
    - `styles.css`
+
+## Suggested Release Rhythm
+
+For most changes in this project:
+
+1. Make the code change
+2. Update the changelog entry
+3. Bump the version
+4. Run `npm run build`
+5. Test on at least one clean vault and one mobile vault
+6. Commit, tag, and publish the GitHub release
 
 ## Community Submission
 

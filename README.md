@@ -143,6 +143,10 @@ For an Obsidian release, the GitHub release assets should include:
 - `main.js`
 - `styles.css`
 
+## 更新记录 Changelog
+
+[CHANGELOG.md](./CHANGELOG.md)
+
 ## 许可证 License
 
 [MIT](./LICENSE)
