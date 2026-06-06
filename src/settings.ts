@@ -28,12 +28,12 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.createEl("h2", { text: "拾句 Shiju" });
     containerEl.createEl("p", {
-      text: "Configure where quick captures should be stored in today's daily note.",
+      text: "配置速记内容要写入到哪里。Configure where quick captures should be stored in today's daily note.",
     });
 
     new Setting(containerEl)
-      .setName("Daily note path format")
-      .setDesc("Vault-relative path template for today's note. Supports YYYY, YY, MM, DD.")
+      .setName("每日笔记路径格式 / Daily note path format")
+      .setDesc("今日日记的 vault 相对路径模板，支持 YYYY、YY、MM、DD。Vault-relative path template for today's note.")
       .addText((text) =>
         text
           .setPlaceholder("0. 周期笔记/YYYY/Daily/MM/YYYY-MM-DD")
@@ -45,8 +45,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Template path")
-      .setDesc("Vault-relative template note used when today's daily note does not exist.")
+      .setName("模板路径 / Template path")
+      .setDesc("今日日记不存在时使用的模板路径。Vault-relative template note used when today's daily note does not exist.")
       .addText((text) =>
         text
           .setPlaceholder("0. 周期笔记/Templates/Daily")
@@ -58,8 +58,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Target heading")
-      .setDesc("The heading under which captured text will be inserted.")
+      .setName("目标标题 / Target heading")
+      .setDesc("速记内容会插入到这个标题下，不需要写前导 #。The heading under which captured text will be inserted.")
       .addText((text) =>
         text
           .setPlaceholder("日常记录")
@@ -71,8 +71,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Markdown heading level")
-      .setDesc("Choose which heading level the toolbar title button should insert.")
+      .setName("标题层级 / Markdown heading level")
+      .setDesc("设置工具条“标题”按钮插入几级标题。Choose which heading level the toolbar title button should insert.")
       .addDropdown((dropdown) =>
         dropdown
           .addOption("1", "H1")
@@ -89,8 +89,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Create heading if missing")
-      .setDesc("Automatically add the target heading when it does not exist yet.")
+      .setName("缺失时自动创建标题 / Create heading if missing")
+      .setDesc("如果目标标题不存在，自动补上。Automatically add the target heading when it does not exist yet.")
       .addToggle((toggle) =>
         toggle.setValue(settings.createHeadingIfMissing).onChange(async (value) => {
           settings.createHeadingIfMissing = value;
@@ -99,13 +99,13 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Write mode")
-      .setDesc("Choose how captured text should be written into the note.")
+      .setName("写入模式 / Write mode")
+      .setDesc("选择以什么格式写入笔记。Choose how captured text should be written into the note.")
       .addDropdown((dropdown) =>
         dropdown
-          .addOption("plain", "Plain text")
-          .addOption("bullet", "Bullet list")
-          .addOption("task", "Task list")
+          .addOption("plain", "普通文本 / Plain text")
+          .addOption("bullet", "无序列表 / Bullet list")
+          .addOption("task", "任务列表 / Task list")
           .setValue(settings.writeMode)
           .onChange(async (value) => {
             settings.writeMode = value as MobileDailyCaptureSettings["writeMode"];
@@ -114,8 +114,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Capture prefix")
-      .setDesc("Text to prepend before the formatted capture block.")
+      .setName("固定前缀 / Capture prefix")
+      .setDesc("在每条速记前追加固定文本。Text to prepend before the formatted capture block.")
       .addText((text) =>
         text
           .setPlaceholder("")
@@ -127,8 +127,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Open note after save")
-      .setDesc("Reveal today's note after a capture is written.")
+      .setName("保存后打开笔记 / Open note after save")
+      .setDesc("保存后自动打开今日日记。Reveal today's note after a capture is written.")
       .addToggle((toggle) =>
         toggle.setValue(settings.openAfterSave).onChange(async (value) => {
           settings.openAfterSave = value;
