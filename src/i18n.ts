@@ -35,6 +35,7 @@ type Copy = {
   saveAndContinue: string;
   saveEmptyNotice: string;
   saveSuccessNotice: string;
+  tagSuggestionsEmpty: string;
   toolbarHeadingLabel: string;
   toolbarHeadingTitle: (level: number) => string;
   toolbarHeadingPlaceholder: string;
@@ -55,7 +56,7 @@ type Copy = {
 const COPY: Record<Locale, Copy> = {
   zh: {
     pluginTitle: "Shiju",
-    openCapture: "打开速记",
+    openCapture: "拾句",
     openCaptureError: "无法打开速记面板。",
     settingsIntro: "配置速记内容要写入到哪里。",
     languageName: "语言",
@@ -86,7 +87,7 @@ const COPY: Record<Locale, Copy> = {
     capturePrefixDesc: "在每条速记前追加固定文本。",
     openNoteAfterSaveName: "保存后打开笔记",
     openNoteAfterSaveDesc: "保存后自动打开今日日记。",
-    modalTitle: "速记",
+    modalTitle: "拾句",
     modalHint: "先记下来，稍后再整理。内容会自动追加到今天的每日笔记。",
     inputPlaceholder: "记录今天的想法、事项或灵感...",
     cancel: "取消",
@@ -94,6 +95,7 @@ const COPY: Record<Locale, Copy> = {
     saveAndContinue: "保存并继续",
     saveEmptyNotice: "先输入一点内容再保存。",
     saveSuccessNotice: "已追加到今天的每日笔记。",
+    tagSuggestionsEmpty: "没有匹配的标签",
     toolbarHeadingLabel: "标题",
     toolbarHeadingTitle: (level: number) => `插入 H${level} 标题`,
     toolbarHeadingPlaceholder: "标题",
@@ -151,6 +153,7 @@ const COPY: Record<Locale, Copy> = {
     saveAndContinue: "Save and continue",
     saveEmptyNotice: "Enter something before saving.",
     saveSuccessNotice: "Added to today's daily note.",
+    tagSuggestionsEmpty: "No matching tags",
     toolbarHeadingLabel: "Heading",
     toolbarHeadingTitle: (level: number) => `Insert H${level} heading`,
     toolbarHeadingPlaceholder: "Heading",

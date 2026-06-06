@@ -10,12 +10,23 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 - Added a language preference setting with `Auto`, `中文`, and `English`
 - Added English UI support for the modal, toolbar, buttons, notices, and settings
+- Added tag suggestions sourced from existing Obsidian tags
+- Added list indentation support for `Tab` and `Shift+Tab`
 
 ### Changed
 
 - Unified plugin copy through a shared i18n layer so interface text switches consistently
 - Changed the public manifest display name to `Shiju`
 - Stopped tracking generated `main.js` in the repository default branch
+- Moved tag suggestions into a fixed single-row area between the toolbar and the input box
+- Renamed the Chinese quick-capture action label to `拾句`
+
+### Fixed
+
+- Fixed quick-capture modal startup order so the input area renders reliably
+- Fixed iPhone third-party keyboard newline handling for list continuation
+- Fixed list continuation and insertion to preserve unordered list markers like `-`, `*`, and `+`
+- Fixed list toolbar actions so they can prepend markers at the start of an existing line
 
 ## [0.2.0] - 2026-06-06
 
