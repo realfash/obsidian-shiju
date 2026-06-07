@@ -6,6 +6,19 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-06-07
+
+### Changed
+
+- Replaced newer vault file lookup calls with `getAbstractFileByPath` compatibility helpers to keep the declared minimum app version valid
+- Updated the settings screen heading to use Obsidian's recommended `Setting(...).setHeading()` pattern
+- Replaced the `builtin-modules` build dependency with Node's built-in `node:module` list
+
+### Fixed
+
+- Narrowed saved settings loading to avoid unsafe `any` assignment during plugin startup
+- Removed CSS patterns flagged by community review linting, including `scrollbar-width` and `!important` toolbar overrides
+
 ## [0.2.1] - 2026-06-06
 
 ### Added

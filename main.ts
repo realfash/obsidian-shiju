@@ -27,7 +27,12 @@ export default class MobileDailyCapturePlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const loaded = await this.loadData();
+    const savedSettings = isMobileDailyCaptureSettingsData(loaded) ? loaded : {};
+    this.settings = {
+      ...DEFAULT_SETTINGS,
+      ...savedSettings,
+    };
   }
 
   async saveSettings(): Promise<void> {
@@ -43,4 +48,8 @@ export default class MobileDailyCapturePlugin extends Plugin {
       new Notice(t(this.settings).openCaptureError);
     }
   }
+}
+
+function isMobileDailyCaptureSettingsData(value: unknown): value is Partial<MobileDailyCaptureSettings> {
+  return typeof value === "object" && value !== null;
 }

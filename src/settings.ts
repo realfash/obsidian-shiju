@@ -29,10 +29,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
     const copy = t(settings);
 
     containerEl.empty();
-    containerEl.createEl("h2", { text: copy.pluginTitle });
-    containerEl.createEl("p", {
-      text: copy.settingsIntro,
-    });
+    new Setting(containerEl).setName(copy.pluginTitle).setHeading();
+    containerEl.createEl("p", { text: copy.settingsIntro });
 
     new Setting(containerEl)
       .setName(copy.languageName)

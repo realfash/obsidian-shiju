@@ -1,6 +1,6 @@
 import esbuild from "esbuild";
+import { builtinModules } from "node:module";
 import process from "process";
-import builtins from "builtin-modules";
 
 const banner =
   "/* eslint-disable */\n" +
@@ -17,7 +17,7 @@ const context = await esbuild.context({
   external: [
     "obsidian",
     "electron",
-    ...builtins,
+    ...builtinModules,
   ],
   format: "cjs",
   target: "es2018",

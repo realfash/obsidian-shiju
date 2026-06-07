@@ -16,7 +16,7 @@ export function buildDailyNotePath(settings: MobileDailyCaptureSettings, date = 
 
 export async function ensureDailyNote(app: App, settings: MobileDailyCaptureSettings): Promise<TFile> {
   const path = buildDailyNotePath(settings);
-  const existing = app.vault.getFileByPath(path);
+  const existing = getFileAtPath(app, path);
 
   if (existing) {
     return existing;
@@ -41,7 +41,7 @@ async function readTemplate(app: App, settings: MobileDailyCaptureSettings, dail
     return "";
   }
 
-  const templateFile = app.vault.getFileByPath(templatePath);
+  const templateFile = getFileAtPath(app, templatePath);
   if (!templateFile) {
     return "";
   }
@@ -74,6 +74,11 @@ function withMarkdownExtension(path: string): string {
 function parentFolder(path: string): string {
   const index = path.lastIndexOf("/");
   return index === -1 ? "" : path.slice(0, index);
+}
+
+function getFileAtPath(app: App, path: string): TFile | null {
+  const entry = app.vault.getAbstractFileByPath(path);
+  return entry instanceof TFile ? entry : null;
 }
 
 async function ensureFolder(app: App, folderPath: string): Promise<void> {
