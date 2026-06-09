@@ -6,6 +6,12 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-06-09
+
+### Fixed
+
+- Community plugin review fixes: innerHTML → DOM API in textarea mirror, popout window compatibility (`activeDocument`), `clearTimeout`/`requestAnimationFrame` scoped to `window`, browser `confirm()` → custom `ConfirmModal`, `any` → `unknown` type safety.
+
 ## [0.3.4] - 2026-06-09
 
 ### Added

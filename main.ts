@@ -28,7 +28,7 @@ export default class MobileDailyCapturePlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const loaded = await this.loadData();
+    const loaded: unknown = await this.loadData();
     const savedSettings = isMobileDailyCaptureSettingsData(loaded) ? loaded : {};
     this.settings = {
       ...DEFAULT_SETTINGS,

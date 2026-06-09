@@ -28,6 +28,7 @@ export class MobileCaptureModal extends Modal {
   saveAndContinueButton?: ButtonComponent;
   private tagSelectionIndex: number = -1;
   private lastInsertedLine: number | undefined;
+  private _activeDoc!: Document;
   private _boundOnSelectionChange?: (e: Event) => void;
   private _boundOnInput?: (e: Event) => void;
   private _boundOnScroll?: (e: Event) => void;
@@ -88,9 +89,10 @@ export class MobileCaptureModal extends Modal {
     this._boundOnInput = (e) => this.handleSelectionOrInputChange(e);
     this._boundOnScroll = (e) => this.handleScroll(e);
     this._boundOnResize = () => this.deferredUpdateOverlay();
+    this._activeDoc = this.contentEl.ownerDocument;
 
-    document.addEventListener("selectionchange", this._boundOnSelectionChange);
-    document.addEventListener("scroll", this._boundOnScroll, true);
+    this._activeDoc.addEventListener("selectionchange", this._boundOnSelectionChange);
+    this._activeDoc.addEventListener("scroll", this._boundOnScroll, true);
     window.addEventListener("resize", this._boundOnResize);
     this.textAreaEl.addEventListener("input", this._boundOnInput);
     this.renderTagSuggestions();
@@ -124,10 +126,10 @@ export class MobileCaptureModal extends Modal {
     this.textAreaEl?.removeEventListener("beforeinput", this.handleBeforeInput as EventListener);
     this.textAreaEl?.removeEventListener("keydown", this.handleKeydown);
     if (this._boundOnSelectionChange) {
-      document.removeEventListener("selectionchange", this._boundOnSelectionChange);
+      this._activeDoc?.removeEventListener("selectionchange", this._boundOnSelectionChange);
     }
     if (this._boundOnScroll) {
-      document.removeEventListener("scroll", this._boundOnScroll, true);
+      this._activeDoc?.removeEventListener("scroll", this._boundOnScroll, true);
     }
     if (this._boundOnResize) {
       window.removeEventListener("resize", this._boundOnResize);
@@ -136,7 +138,7 @@ export class MobileCaptureModal extends Modal {
       this.textAreaEl?.removeEventListener("input", this._boundOnInput);
     }
     if (this._updateTimeout) {
-      clearTimeout(this._updateTimeout);
+      window.clearTimeout(this._updateTimeout);
       this._updateTimeout = null;
     }
     this._pendingInputChange = false;
@@ -151,7 +153,7 @@ export class MobileCaptureModal extends Modal {
     }
 
     if (this._updateTimeout) {
-      clearTimeout(this._updateTimeout);
+      window.clearTimeout(this._updateTimeout);
     }
 
     this._updateTimeout = window.setTimeout(() => {
@@ -171,7 +173,7 @@ export class MobileCaptureModal extends Modal {
 
   private deferredUpdateOverlay(): void {
     if (this.tagOverlayEl && !this.tagOverlayEl.hasClass("is-hidden")) {
-      requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
         this.updateOverlayPosition();
       });
     }
@@ -642,7 +644,7 @@ export class MobileCaptureModal extends Modal {
     });
 
     this.updateTagSelection();
-    requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       this.updateOverlayPosition();
     });
   }
@@ -708,7 +710,7 @@ export class MobileCaptureModal extends Modal {
       return this.mirrorEl;
     }
 
-    const mirror = document.createElement("div");
+    const mirror = this._activeDoc.createElement("div");
     mirror.className = "tag-textarea-mirror";
     const style = getComputedStyle(textarea);
     mirror.style.cssText = [
@@ -761,21 +763,24 @@ export class MobileCaptureModal extends Modal {
     mirror.style.height = `${textarea.offsetHeight}px`;
 
     const lines = value.split("\n");
-    let mirrorHTML = "";
+    const fragment = this._activeDoc.createDocumentFragment();
     for (let i = 0; i < lines.length; i++) {
       if (i === lineNumber) {
         const col = linesBefore[lineNumber].length;
-        mirrorHTML += this.escapeHtml(lines[i].slice(0, col));
-        mirrorHTML += '<span class="tag-cursor-marker">|</span>';
-        mirrorHTML += this.escapeHtml(lines[i].slice(col));
+        const beforeText = this.escapeHtml(lines[i].slice(0, col));
+        const activeChar = this.escapeHtml(lines[i].slice(col, col + 1) || "\u00A0");
+        const afterText = this.escapeHtml(lines[i].slice(col + 1));
+        fragment.createSpan({ text: beforeText });
+        fragment.createSpan({ cls: "tag-cursor-marker", text: activeChar });
+        fragment.createSpan({ text: afterText });
       } else {
-        mirrorHTML += this.escapeHtml(lines[i]);
+        fragment.createSpan({ text: this.escapeHtml(lines[i]) });
       }
       if (i < lines.length - 1) {
-        mirrorHTML += "<br>";
+        fragment.createEl("br");
       }
     }
-    mirror.innerHTML = mirrorHTML;
+    mirror.replaceChildren(fragment);
 
     const marker = mirror.querySelector(".tag-cursor-marker");
     if (!marker) {

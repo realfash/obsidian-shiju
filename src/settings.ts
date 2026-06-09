@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import type MobileDailyCapturePlugin from "../main";
 import type { MobileDailyCaptureSettings } from "./types";
 import { t } from "./i18n";
+import { ConfirmModal } from "./confirm-modal";
 
 export const DEFAULT_SETTINGS: MobileDailyCaptureSettings = {
   language: "auto",
@@ -156,9 +157,8 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
 
     new Setting(containerEl).addButton((button) =>
       button.setButtonText(copy.resetButtonText).onClick(async () => {
-        if (!confirm(copy.resetConfirmMessage)) {
-          return;
-        }
+        const confirmed = await new ConfirmModal(this.app, copy.resetConfirmMessage).waitForConfirmation();
+        if (!confirmed) { return; }
 
         this.plugin.settings = { ...DEFAULT_SETTINGS };
         await this.plugin.saveSettings();
