@@ -565,6 +565,17 @@ export class MobileCaptureModal extends Modal {
       return { mode: "continue", prefix: `${indent}${marker} ` };
     }
 
+    const quoteMatch = line.match(/^(\s*)(>+)\s+(.*)$/);
+    if (quoteMatch) {
+      const indent = quoteMatch[1];
+      const marker = quoteMatch[2];
+      const content = quoteMatch[3].trim();
+      if (!content) {
+        return { mode: "exit" };
+      }
+      return { mode: "continue", prefix: `${indent}${marker} ` };
+    }
+
     return null;
   }
 
@@ -617,8 +628,10 @@ export class MobileCaptureModal extends Modal {
 
     suggestions.forEach((tag) => {
       const item = overlay.createDiv({ cls: "mobile-daily-capture-tag-item" });
-      const highlightStart = 1;
-      const highlightEnd = highlightStart + query.length;
+      const lowerTag = tag.toLowerCase();
+      const matchIndex = lowerTag.indexOf(query.toLowerCase());
+      const highlightStart = matchIndex >= 0 ? matchIndex : 1;
+      const highlightEnd = Math.min(highlightStart + query.length, tag.length);
 
       item.createSpan({ text: tag.slice(0, highlightStart) });
       item.createEl("strong", { text: tag.slice(highlightStart, highlightEnd) });
@@ -869,7 +882,7 @@ export class MobileCaptureModal extends Modal {
 
     const availableTags = Object.keys(metadataCache.getTags?.() ?? {});
     return availableTags
-      .filter((tag) => tag.toLowerCase().startsWith(`#${query.toLowerCase()}`))
+      .filter((tag) => tag.toLowerCase().includes(query.toLowerCase()))
       .sort((left, right) => left.localeCompare(right))
       .slice(0, 8);
   }

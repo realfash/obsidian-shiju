@@ -6,6 +6,17 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-06-09
+
+### Added
+
+- Blockquote continuation: pressing Enter inside a `> 引用内容` line now continues with `> ` on the next line. Empty `> ` lines exit the blockquote style. Supports nested quotes (`>>`, `>>>`).
+
+### Changed
+
+- Tag suggestion matching: now searches inside the full tag name (`includes`) instead of only from the start (`startsWith`). Typing `#shiju` now finds `#AICoding/shiju` and any other tag containing "shiju".
+- Tag suggestion highlight: dynamically positions the bold highlight at the actual match location instead of always starting at position 1.
+
 ## [0.3.3] - 2026-06-09
 
 ### Changed
