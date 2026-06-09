@@ -6,6 +6,17 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-06-09
+
+### Changed
+
+- Tag suggestions now render as a floating overlay anchored to the cursor position inside the textarea, using a textarea mirror element for pixel-accurate positioning. The overlay does not participate in document flow — content area no longer jumps when suggestions appear or disappear.
+
+### Fixed
+
+- Keyboard navigation (↑/↓/Enter) in suggestion overlay now scrolls only the overlay itself via `scrollItemIntoView()`, preventing accidental modal scrolling.
+- Event system refactored: uses `selectionchange` + `input` + capture-phase `scroll` + `resize` with named function references (da688ing) for reliable setup/teardown across modal open/close cycles.
+
 ## [0.3.1] - 2026-06-09
 
 ### Fixed

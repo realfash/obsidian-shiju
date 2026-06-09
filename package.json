@@ -1,6 +1,6 @@
 {
   "name": "obsidian-shiju",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Shiju is a mobile-first quick capture plugin for Obsidian daily notes.",
   "main": "main.js",
   "scripts": {

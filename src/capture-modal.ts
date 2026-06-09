@@ -22,11 +22,18 @@ type ToolbarAction = {
 export class MobileCaptureModal extends Modal {
   plugin: MobileDailyCapturePlugin;
   textAreaEl!: HTMLTextAreaElement;
-  tagSuggestionsEl?: HTMLDivElement;
+  tagOverlayEl?: HTMLDivElement;
+  mirrorEl?: HTMLDivElement;
   saveButton?: ButtonComponent;
   saveAndContinueButton?: ButtonComponent;
   private tagSelectionIndex: number = -1;
   private lastInsertedLine: number | undefined;
+  private _boundOnSelectionChange?: (e: Event) => void;
+  private _boundOnInput?: (e: Event) => void;
+  private _boundOnScroll?: (e: Event) => void;
+  private _boundOnResize?: () => void;
+  private _updateTimeout: number | null = null;
+  private _pendingInputChange = false;
   private pendingLineBreakSnapshot?: {
     value: string;
     start: number;
@@ -66,7 +73,7 @@ export class MobileCaptureModal extends Modal {
 
     const editorWrap = contentEl.createDiv({ cls: "mobile-daily-capture-editor-wrap" });
 
-    this.tagSuggestionsEl = editorWrap.createDiv({ cls: "mobile-daily-capture-tag-suggestions is-hidden" });
+    this.tagOverlayEl = contentEl.createDiv({ cls: "mobile-daily-capture-tag-overlay is-hidden" });
 
     this.textAreaEl = editorWrap.createEl("textarea", {
       attr: {
@@ -76,8 +83,16 @@ export class MobileCaptureModal extends Modal {
     this.captureInputSnapshot();
     this.textAreaEl.addEventListener("beforeinput", this.handleBeforeInput as EventListener);
     this.textAreaEl.addEventListener("keydown", this.handleKeydown);
-    this.textAreaEl.addEventListener("input", this.handleInputChange);
-    this.textAreaEl.addEventListener("click", this.handleInputChange);
+
+    this._boundOnSelectionChange = (e) => this.handleSelectionOrInputChange(e);
+    this._boundOnInput = (e) => this.handleSelectionOrInputChange(e);
+    this._boundOnScroll = (e) => this.handleScroll(e);
+    this._boundOnResize = () => this.deferredUpdateOverlay();
+
+    document.addEventListener("selectionchange", this._boundOnSelectionChange);
+    document.addEventListener("scroll", this._boundOnScroll, true);
+    window.addEventListener("resize", this._boundOnResize);
+    this.textAreaEl.addEventListener("input", this._boundOnInput);
     this.renderTagSuggestions();
 
     const footer = contentEl.createDiv({ cls: "mobile-daily-capture-footer" });
@@ -108,16 +123,59 @@ export class MobileCaptureModal extends Modal {
   onClose(): void {
     this.textAreaEl?.removeEventListener("beforeinput", this.handleBeforeInput as EventListener);
     this.textAreaEl?.removeEventListener("keydown", this.handleKeydown);
-    this.textAreaEl?.removeEventListener("input", this.handleInputChange);
-    this.textAreaEl?.removeEventListener("click", this.handleInputChange);
+    if (this._boundOnSelectionChange) {
+      document.removeEventListener("selectionchange", this._boundOnSelectionChange);
+    }
+    if (this._boundOnScroll) {
+      document.removeEventListener("scroll", this._boundOnScroll, true);
+    }
+    if (this._boundOnResize) {
+      window.removeEventListener("resize", this._boundOnResize);
+    }
+    if (this._boundOnInput) {
+      this.textAreaEl?.removeEventListener("input", this._boundOnInput);
+    }
+    if (this._updateTimeout) {
+      clearTimeout(this._updateTimeout);
+      this._updateTimeout = null;
+    }
+    this._pendingInputChange = false;
+    this.mirrorEl = undefined;
+    this.tagOverlayEl = undefined;
     this.contentEl.empty();
   }
 
-  private readonly handleInputChange = (): void => {
-    this.repairListContinuationAfterInput();
-    this.renderTagSuggestions();
-    this.captureInputSnapshot();
-  };
+  private handleSelectionOrInputChange(event: Event): void {
+    if (event.type === "input") {
+      this._pendingInputChange = true;
+    }
+
+    if (this._updateTimeout) {
+      clearTimeout(this._updateTimeout);
+    }
+
+    this._updateTimeout = window.setTimeout(() => {
+      if (this._pendingInputChange) {
+        this.repairListContinuationAfterInput();
+        this._pendingInputChange = false;
+      }
+      this.renderTagSuggestions();
+      this.captureInputSnapshot();
+      this._updateTimeout = null;
+    }, 16);
+  }
+
+  private handleScroll(_event: Event): void {
+    this.deferredUpdateOverlay();
+  }
+
+  private deferredUpdateOverlay(): void {
+    if (this.tagOverlayEl && !this.tagOverlayEl.hasClass("is-hidden")) {
+      requestAnimationFrame(() => {
+        this.updateOverlayPosition();
+      });
+    }
+  }
 
   private readonly handleBeforeInput = (event: InputEvent): void => {
     if (event.isComposing) {
@@ -533,32 +591,32 @@ export class MobileCaptureModal extends Modal {
   }
 
   private renderTagSuggestions(): void {
-    const container = this.tagSuggestionsEl;
-    if (!container) {
+    const overlay = this.tagOverlayEl;
+    if (!overlay) {
       return;
     }
 
     const query = this.getActiveTagQuery();
-    container.empty();
+    overlay.empty();
 
     if (!query) {
       this.tagSelectionIndex = -1;
-      container.addClass("is-hidden");
+      overlay.addClass("is-hidden");
       return;
     }
 
     const suggestions = this.getTagSuggestions(query);
     if (!suggestions.length) {
       this.tagSelectionIndex = -1;
-      container.addClass("is-hidden");
+      overlay.addClass("is-hidden");
       return;
     }
 
     this.tagSelectionIndex = 0;
-    container.removeClass("is-hidden");
+    overlay.removeClass("is-hidden");
 
     suggestions.forEach((tag) => {
-      const item = container.createDiv({ cls: "mobile-daily-capture-tag-item" });
+      const item = overlay.createDiv({ cls: "mobile-daily-capture-tag-item" });
       const highlightStart = 1;
       const highlightEnd = highlightStart + query.length;
 
@@ -571,15 +629,18 @@ export class MobileCaptureModal extends Modal {
     });
 
     this.updateTagSelection();
+    requestAnimationFrame(() => {
+      this.updateOverlayPosition();
+    });
   }
 
   private handleTagSuggestionKeydown(event: KeyboardEvent): boolean {
-    const container = this.tagSuggestionsEl;
-    if (!container || container.hasClass("is-hidden")) {
+    const overlay = this.tagOverlayEl;
+    if (!overlay || overlay.hasClass("is-hidden")) {
       return false;
     }
 
-    const items = Array.from(container.querySelectorAll<HTMLElement>(".mobile-daily-capture-tag-item"));
+    const items = Array.from(overlay.querySelectorAll<HTMLElement>(".mobile-daily-capture-tag-item"));
     if (!items.length) {
       return false;
     }
@@ -588,6 +649,7 @@ export class MobileCaptureModal extends Modal {
       event.preventDefault();
       this.tagSelectionIndex = (this.tagSelectionIndex + 1) % items.length;
       this.updateTagSelection();
+      this.scrollItemIntoView(items[this.tagSelectionIndex]);
       return true;
     }
 
@@ -595,6 +657,7 @@ export class MobileCaptureModal extends Modal {
       event.preventDefault();
       this.tagSelectionIndex = (this.tagSelectionIndex - 1 + items.length) % items.length;
       this.updateTagSelection();
+      this.scrollItemIntoView(items[this.tagSelectionIndex]);
       return true;
     }
 
@@ -612,15 +675,166 @@ export class MobileCaptureModal extends Modal {
   }
 
   private updateTagSelection(): void {
-    const container = this.tagSuggestionsEl;
-    if (!container) {
+    const overlay = this.tagOverlayEl;
+    if (!overlay) {
       return;
     }
 
-    const items = Array.from(container.querySelectorAll<HTMLElement>(".mobile-daily-capture-tag-item"));
+    const items = Array.from(overlay.querySelectorAll<HTMLElement>(".mobile-daily-capture-tag-item"));
     items.forEach((item, index) => {
       item.toggleClass("is-selected", index === this.tagSelectionIndex);
     });
+  }
+
+  private getOrCreateMirrorElement(): HTMLDivElement | null {
+    const textarea = this.textAreaEl;
+    if (!textarea) {
+      return null;
+    }
+    if (this.mirrorEl) {
+      return this.mirrorEl;
+    }
+
+    const mirror = document.createElement("div");
+    mirror.className = "tag-textarea-mirror";
+    const style = getComputedStyle(textarea);
+    mirror.style.cssText = [
+      "position: absolute",
+      "top: 0",
+      "left: 0",
+      "z-index: -1",
+      "visibility: hidden",
+      "overflow: hidden",
+      `width: ${textarea.offsetWidth}px`,
+      `height: ${textarea.offsetHeight}px`,
+      `padding: ${style.padding}`,
+      `font-size: ${style.fontSize}`,
+      `font-family: ${style.fontFamily}`,
+      `font-weight: ${style.fontWeight}`,
+      `font-style: ${style.fontStyle}`,
+      `line-height: ${style.lineHeight}`,
+      `letter-spacing: ${style.letterSpacing}`,
+      `word-spacing: ${style.wordSpacing}`,
+      "white-space: pre-wrap",
+      "word-wrap: break-word",
+      "border: 0",
+      "box-sizing: border-box",
+    ].join("; ");
+
+    textarea.parentElement?.insertBefore(mirror, textarea);
+    this.mirrorEl = mirror;
+    return mirror;
+  }
+
+  private getCursorPixelPosition(): { top: number; left: number; height: number } | null {
+    const textarea = this.textAreaEl;
+    if (!textarea || textarea.selectionStart === null || textarea.selectionStart === undefined) {
+      return null;
+    }
+
+    const cursorCharIndex = textarea.selectionStart;
+    const value = textarea.value;
+    const linesBefore = value.slice(0, cursorCharIndex).split("\n");
+    const lineNumber = linesBefore.length - 1;
+
+    const mirror = this.getOrCreateMirrorElement();
+    if (!mirror) {
+      return null;
+    }
+
+    const style = getComputedStyle(textarea);
+    const lineHeight = parseFloat(style.lineHeight) || 22;
+    mirror.style.width = `${textarea.offsetWidth}px`;
+    mirror.style.height = `${textarea.offsetHeight}px`;
+
+    const lines = value.split("\n");
+    let mirrorHTML = "";
+    for (let i = 0; i < lines.length; i++) {
+      if (i === lineNumber) {
+        const col = linesBefore[lineNumber].length;
+        mirrorHTML += this.escapeHtml(lines[i].slice(0, col));
+        mirrorHTML += '<span class="tag-cursor-marker">|</span>';
+        mirrorHTML += this.escapeHtml(lines[i].slice(col));
+      } else {
+        mirrorHTML += this.escapeHtml(lines[i]);
+      }
+      if (i < lines.length - 1) {
+        mirrorHTML += "<br>";
+      }
+    }
+    mirror.innerHTML = mirrorHTML;
+
+    const marker = mirror.querySelector(".tag-cursor-marker");
+    if (!marker) {
+      return null;
+    }
+
+    const markerRect = marker.getBoundingClientRect();
+    const mirrorRect = mirror.getBoundingClientRect();
+    const textareaRect = textarea.getBoundingClientRect();
+
+    return {
+      top: markerRect.top - mirrorRect.top + textareaRect.top - textarea.scrollTop,
+      left: markerRect.left - mirrorRect.left + textareaRect.left - textarea.scrollLeft,
+      height: lineHeight,
+    };
+  }
+
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  private updateOverlayPosition(): void {
+    const overlay = this.tagOverlayEl;
+    if (!overlay || overlay.hasClass("is-hidden")) {
+      return;
+    }
+
+    const cursorPos = this.getCursorPixelPosition();
+    if (!cursorPos) {
+      return;
+    }
+
+    const contentRect = this.contentEl.getBoundingClientRect();
+    const overlayWidth = overlay.offsetWidth || 200;
+    const overlayHeight = overlay.offsetHeight || 60;
+    const margin = 8;
+
+    let top = cursorPos.top - contentRect.top + cursorPos.height + 4;
+    let left = cursorPos.left - contentRect.left;
+
+    if (left + overlayWidth + margin > contentRect.width) {
+      left = Math.max(margin, contentRect.width - overlayWidth - margin);
+    }
+    left = Math.max(margin, left);
+
+    if (top + overlayHeight + margin > contentRect.height) {
+      top = cursorPos.top - contentRect.top - overlayHeight - 4;
+    }
+    top = Math.max(margin, top);
+
+    overlay.style.top = `${top}px`;
+    overlay.style.left = `${left}px`;
+  }
+
+  private scrollItemIntoView(item: HTMLElement): void {
+    const overlay = this.tagOverlayEl;
+    if (!overlay) {
+      return;
+    }
+
+    const overlayRect = overlay.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+
+    if (itemRect.bottom > overlayRect.bottom) {
+      overlay.scrollTop += itemRect.bottom - overlayRect.bottom;
+    } else if (itemRect.top < overlayRect.top) {
+      overlay.scrollTop -= overlayRect.top - itemRect.top;
+    }
   }
 
   private captureInputSnapshot(): void {
