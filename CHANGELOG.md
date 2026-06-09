@@ -6,6 +6,16 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-06-09
+
+### Changed
+
+- Toolbar button labels in Chinese mode: 斜体 (was I), 代码 (was </>), 引用 (was "), 横线 (was —) — all now display as 2 Chinese characters.
+
+### Fixed
+
+- Blockquote tool button no longer jumps 2 lines below the content — cursor now stays inside `> 引用内容`, ready for immediate editing.
+
 ## [0.3.2] - 2026-06-09
 
 ### Changed

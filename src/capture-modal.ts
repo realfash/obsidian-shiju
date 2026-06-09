@@ -992,7 +992,11 @@ export class MobileCaptureModal extends Modal {
           const text = selectedText || copy.toolbarQuotePlaceholder;
           const lines = text.split("\n");
           const quoted = lines.map((line) => `> ${line}`).join("\n");
-          return { text: `${quoted}\n\n` };
+          return {
+            text: `${quoted}`,
+            selectionStart: 2,
+            selectionEnd: 2 + text.length,
+          };
         },
       },
       {
