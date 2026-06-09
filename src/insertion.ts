@@ -2,21 +2,35 @@ import { Notice } from "obsidian";
 import type { App, TFile } from "obsidian";
 import type { MobileDailyCaptureSettings } from "./types";
 
+export interface InsertionResult {
+  success: boolean;
+  insertedLine?: number;
+}
+
+type PreparedInsertion = InsertionResult & {
+  content: string;
+};
+
 export async function appendCaptureToDailyNote(
   app: App,
   file: TFile,
   rawInput: string,
   settings: MobileDailyCaptureSettings,
-): Promise<void> {
+): Promise<InsertionResult> {
   const normalizedInput = rawInput.trim();
   if (!normalizedInput) {
     throw new Error("Capture content is empty.");
   }
 
-  await app.vault.process(file, (content) => {
-    const block = buildCaptureBlock(normalizedInput, settings);
-    return insertIntoHeading(content, settings.targetHeading, block, settings.createHeadingIfMissing);
-  });
+  const content = await app.vault.read(file);
+  const block = buildCaptureBlock(normalizedInput, settings);
+  const result = await insertIntoHeading(content, settings.targetHeading, block, settings.createHeadingIfMissing);
+
+  await app.vault.modify(file, result.content);
+  return {
+    success: result.success,
+    insertedLine: result.insertedLine,
+  };
 }
 
 function buildCaptureBlock(input: string, settings: MobileDailyCaptureSettings): string {
@@ -45,12 +59,12 @@ function buildCaptureBlock(input: string, settings: MobileDailyCaptureSettings):
   return `${taskLines.join("\n")}\n`;
 }
 
-function insertIntoHeading(
+async function insertIntoHeading(
   content: string,
   headingName: string,
   block: string,
   createHeadingIfMissing: boolean,
-): string {
+): Promise<PreparedInsertion> {
   const normalized = normalizeNewlines(content);
   const heading = headingName.trim().replace(/^#+\s*/, "");
   const lines = normalized.length ? normalized.split("\n") : [];
@@ -90,13 +104,22 @@ function insertIntoHeading(
   const after = lines.slice(endIndex);
 
   const mergedSection = normalizeSectionWithBlock(sectionLines, block);
-  return [...before, ...mergedSection, ...after].join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+  const insertedLine = startIndex + 1 + getLinesBeforeBlockInSection(sectionLines);
+  return {
+    success: true,
+    insertedLine,
+    content: [...before, ...mergedSection, ...after].join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n",
+  };
 }
 
-function appendHeadingBlock(content: string, heading: string, block: string): string {
+function appendHeadingBlock(content: string, heading: string, block: string): PreparedInsertion {
   const prefix = content.trimEnd();
   const parts = prefix ? [prefix, "", `## ${heading}`, "", block.trimEnd()] : [`## ${heading}`, "", block.trimEnd()];
-  return `${parts.join("\n")}\n`;
+  return {
+    success: true,
+    insertedLine: prefix ? prefix.split("\n").length + 3 : 2,
+    content: `${parts.join("\n")}\n`,
+  };
 }
 
 function normalizeSectionWithBlock(sectionLines: string[], block: string): string[] {
@@ -117,6 +140,20 @@ function normalizeSectionWithBlock(sectionLines: string[], block: string): strin
 
   result.push(...block.trimEnd().split("\n"), "");
   return result;
+}
+
+function getLinesBeforeBlockInSection(sectionLines: string[]): number {
+  const section = [...sectionLines];
+
+  while (section.length > 0 && section[0] === "") {
+    section.shift();
+  }
+
+  while (section.length > 0 && section[section.length - 1] === "") {
+    section.pop();
+  }
+
+  return 1 + (section.length > 0 ? section.length + 1 : 0);
 }
 
 function normalizeNewlines(value: string): string {

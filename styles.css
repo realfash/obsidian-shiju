@@ -54,27 +54,46 @@
 
 .mobile-daily-capture-tag-suggestions {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-  align-items: center;
-  min-height: 2.6rem;
-  max-height: 2.6rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 0.1rem;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  min-height: auto;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
 }
 
 .mobile-daily-capture-tag-suggestions.is-hidden {
-  visibility: hidden;
+  display: none;
 }
 
-.mobile-daily-capture-tag-suggestion {
-  flex: 0 0 auto;
-  min-height: 30px;
-  padding: 0.18rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  white-space: nowrap;
+.mobile-daily-capture-tag-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-normal);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.mobile-daily-capture-tag-item:last-child {
+  border-bottom: none;
+}
+
+.mobile-daily-capture-tag-item:hover,
+.mobile-daily-capture-tag-item.is-selected {
+  background: var(--interactive-accent-hover);
+  color: var(--text-on-accent);
+}
+
+.mobile-daily-capture-tag-item strong,
+.mobile-daily-capture-tag-item mark {
+  color: var(--text-accent);
+  font-weight: 700;
+  background: none;
 }
 
 .mobile-daily-capture-tag-suggestions::-webkit-scrollbar {
@@ -87,11 +106,15 @@
   flex-wrap: nowrap;
   width: 100%;
   align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-daily-capture-toolbar .mobile-daily-capture-toolbar-button {
-  flex: 1 1 20%;
-  min-width: 0;
+  flex: 0 0 auto;
+  min-width: 3.75rem;
   min-height: 34px;
   padding: 0.24rem 0.2rem;
   border-radius: 10px;
@@ -129,7 +152,7 @@
   }
 
   .mobile-daily-capture-toolbar .mobile-daily-capture-toolbar-button {
-    flex: 1 1 20%;
+    flex: 0 0 auto;
     min-height: 32px;
     padding: 0.16rem 0.08rem;
     font-size: 0.78rem;

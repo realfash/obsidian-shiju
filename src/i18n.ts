@@ -27,6 +27,8 @@ type Copy = {
   capturePrefixDesc: string;
   openNoteAfterSaveName: string;
   openNoteAfterSaveDesc: string;
+  resetButtonText: string;
+  resetConfirmMessage: string;
   modalTitle: string;
   modalHint: string;
   inputPlaceholder: string;
@@ -51,6 +53,17 @@ type Copy = {
   toolbarTagLabel: string;
   toolbarTagTitle: string;
   toolbarTagPlaceholder: string;
+  toolbarItalicLabel: string;
+  toolbarItalicTitle: string;
+  toolbarItalicPlaceholder: string;
+  toolbarCodeLabel: string;
+  toolbarCodeTitle: string;
+  toolbarCodePlaceholder: string;
+  toolbarQuoteLabel: string;
+  toolbarQuoteTitle: string;
+  toolbarQuotePlaceholder: string;
+  toolbarHrLabel: string;
+  toolbarHrTitle: string;
 };
 
 const COPY: Record<Locale, Copy> = {
@@ -87,6 +100,8 @@ const COPY: Record<Locale, Copy> = {
     capturePrefixDesc: "在每条速记前追加固定文本。",
     openNoteAfterSaveName: "保存后打开笔记",
     openNoteAfterSaveDesc: "保存后自动打开今日日记。",
+    resetButtonText: "恢复默认设置",
+    resetConfirmMessage: "确定要恢复所有设置到默认值吗？此操作不可撤销。",
     modalTitle: "拾句",
     modalHint: "先记下来，稍后再整理。内容会自动追加到今天的每日笔记。",
     inputPlaceholder: "记录今天的想法、事项或灵感...",
@@ -111,6 +126,17 @@ const COPY: Record<Locale, Copy> = {
     toolbarTagLabel: "标签",
     toolbarTagTitle: "插入标签",
     toolbarTagPlaceholder: "标签",
+    toolbarItalicLabel: "I",
+    toolbarItalicTitle: "斜体",
+    toolbarItalicPlaceholder: "斜体文本",
+    toolbarCodeLabel: "</>",
+    toolbarCodeTitle: "行内代码",
+    toolbarCodePlaceholder: "代码",
+    toolbarQuoteLabel: "\"",
+    toolbarQuoteTitle: "引用",
+    toolbarQuotePlaceholder: "引用内容",
+    toolbarHrLabel: "—",
+    toolbarHrTitle: "分割线",
   },
   en: {
     pluginTitle: "Shiju",
@@ -145,6 +171,8 @@ const COPY: Record<Locale, Copy> = {
     capturePrefixDesc: "Text to prepend before the formatted capture block.",
     openNoteAfterSaveName: "Open note after save",
     openNoteAfterSaveDesc: "Reveal today's note after a capture is written.",
+    resetButtonText: "Reset to Defaults",
+    resetConfirmMessage: "Are you sure you want to reset all settings to their defaults? This action cannot be undone.",
     modalTitle: "Quick capture",
     modalHint: "Capture it first and organize it later. The text will be appended to today's daily note.",
     inputPlaceholder: "Capture a thought, task, or spark...",
@@ -169,6 +197,17 @@ const COPY: Record<Locale, Copy> = {
     toolbarTagLabel: "Tag",
     toolbarTagTitle: "Insert tag",
     toolbarTagPlaceholder: "tag",
+    toolbarItalicLabel: "I",
+    toolbarItalicTitle: "Italic",
+    toolbarItalicPlaceholder: "italic text",
+    toolbarCodeLabel: "</>",
+    toolbarCodeTitle: "Inline Code",
+    toolbarCodePlaceholder: "code",
+    toolbarQuoteLabel: "\"",
+    toolbarQuoteTitle: "Blockquote",
+    toolbarQuotePlaceholder: "quote",
+    toolbarHrLabel: "—",
+    toolbarHrTitle: "Horizontal Rule",
   },
 };
 

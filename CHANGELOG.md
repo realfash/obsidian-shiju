@@ -6,7 +6,16 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
-## [0.2.2] - 2026-06-07
+## [0.3.0] - 2026-06-09
+
+### Added
+
+- Tag suggestion dropdown: matching highlight, keyboard navigation (↑/↓/Enter), interactive item selection
+- GitHub Actions CI workflow: automated build on push and pull request
+- Markdown toolbar expanded: italic, inline code, blockquote, horizontal rule buttons
+- Horizontal scroll for the Markdown toolbar on mobile
+- Save-and-scroll: after saving, the editor now scrolls to and positions the cursor at the inserted content
+- Settings page "Reset to Defaults" button with confirmation dialog
 
 ### Changed
 

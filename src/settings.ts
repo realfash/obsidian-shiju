@@ -152,5 +152,17 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }),
       );
+
+    new Setting(containerEl).addButton((button) =>
+      button.setButtonText(copy.resetButtonText).onClick(async () => {
+        if (!confirm(copy.resetConfirmMessage)) {
+          return;
+        }
+
+        this.plugin.settings = { ...DEFAULT_SETTINGS };
+        await this.plugin.saveSettings();
+        this.display();
+      }),
+    );
   }
 }

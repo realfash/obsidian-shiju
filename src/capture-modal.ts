@@ -1,4 +1,5 @@
-import { ButtonComponent, Modal, Notice } from "obsidian";
+import { ButtonComponent, MarkdownView, Modal, Notice } from "obsidian";
+import type { TFile } from "obsidian";
 import { appendCaptureToDailyNote, notifyWriteError } from "./insertion";
 import { ensureDailyNote } from "./daily-note";
 import type MobileDailyCapturePlugin from "../main";
@@ -24,6 +25,8 @@ export class MobileCaptureModal extends Modal {
   tagSuggestionsEl?: HTMLDivElement;
   saveButton?: ButtonComponent;
   saveAndContinueButton?: ButtonComponent;
+  private tagSelectionIndex: number = -1;
+  private lastInsertedLine: number | undefined;
   private pendingLineBreakSnapshot?: {
     value: string;
     start: number;
@@ -137,6 +140,10 @@ export class MobileCaptureModal extends Modal {
       return;
     }
 
+    if (this.handleTagSuggestionKeydown(event)) {
+      return;
+    }
+
     if (event.key === "Tab") {
       this.handleTabKey(event);
       return;
@@ -230,10 +237,11 @@ export class MobileCaptureModal extends Modal {
 
     try {
       const file = await ensureDailyNote(this.app, this.plugin.settings);
-      await appendCaptureToDailyNote(this.app, file, value, this.plugin.settings);
+      const insertionResult = await appendCaptureToDailyNote(this.app, file, value, this.plugin.settings);
+      this.lastInsertedLine = insertionResult.success ? insertionResult.insertedLine : undefined;
 
       if (this.plugin.settings.openAfterSave) {
-        await this.app.workspace.getLeaf(true).openFile(file);
+        await this.openAfterSave(file);
       }
 
       new Notice(copy.saveSuccessNotice);
@@ -250,6 +258,29 @@ export class MobileCaptureModal extends Modal {
     } finally {
       this.setSavingState(false);
     }
+  }
+
+  private async openAfterSave(file: TFile): Promise<void> {
+    await this.app.workspace.getLeaf(true).openFile(file);
+
+    if (this.lastInsertedLine === undefined) {
+      return;
+    }
+
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) {
+      return;
+    }
+
+    const line = this.lastInsertedLine;
+    view.editor.setCursor({ line, ch: 0 });
+    view.editor.scrollIntoView(
+      {
+        from: { line, ch: 0 },
+        to: { line: line + 1, ch: 0 },
+      },
+      true,
+    );
   }
 
   private setSavingState(isSaving: boolean): void {
@@ -511,24 +542,84 @@ export class MobileCaptureModal extends Modal {
     container.empty();
 
     if (!query) {
+      this.tagSelectionIndex = -1;
       container.addClass("is-hidden");
       return;
     }
 
     const suggestions = this.getTagSuggestions(query);
     if (!suggestions.length) {
+      this.tagSelectionIndex = -1;
       container.addClass("is-hidden");
       return;
     }
 
+    this.tagSelectionIndex = 0;
     container.removeClass("is-hidden");
 
     suggestions.forEach((tag) => {
-      const button = new ButtonComponent(container);
-      button.buttonEl.addClass("mobile-daily-capture-tag-suggestion");
-      button.setButtonText(tag).onClick(() => {
+      const item = container.createDiv({ cls: "mobile-daily-capture-tag-item" });
+      const highlightStart = 1;
+      const highlightEnd = highlightStart + query.length;
+
+      item.createSpan({ text: tag.slice(0, highlightStart) });
+      item.createEl("strong", { text: tag.slice(highlightStart, highlightEnd) });
+      item.createSpan({ text: tag.slice(highlightEnd) });
+      item.addEventListener("click", () => {
         this.applyTagSuggestion(tag);
       });
+    });
+
+    this.updateTagSelection();
+  }
+
+  private handleTagSuggestionKeydown(event: KeyboardEvent): boolean {
+    const container = this.tagSuggestionsEl;
+    if (!container || container.hasClass("is-hidden")) {
+      return false;
+    }
+
+    const items = Array.from(container.querySelectorAll<HTMLElement>(".mobile-daily-capture-tag-item"));
+    if (!items.length) {
+      return false;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      this.tagSelectionIndex = (this.tagSelectionIndex + 1) % items.length;
+      this.updateTagSelection();
+      return true;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      this.tagSelectionIndex = (this.tagSelectionIndex - 1 + items.length) % items.length;
+      this.updateTagSelection();
+      return true;
+    }
+
+    if (event.key === "Enter" && this.tagSelectionIndex >= 0) {
+      event.preventDefault();
+      const selected = items[this.tagSelectionIndex];
+      const tag = selected?.textContent;
+      if (tag) {
+        this.applyTagSuggestion(tag);
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  private updateTagSelection(): void {
+    const container = this.tagSuggestionsEl;
+    if (!container) {
+      return;
+    }
+
+    const items = Array.from(container.querySelectorAll<HTMLElement>(".mobile-daily-capture-tag-item"));
+    items.forEach((item, index) => {
+      item.toggleClass("is-selected", index === this.tagSelectionIndex);
     });
   }
 
@@ -654,6 +745,47 @@ export class MobileCaptureModal extends Modal {
             selectionStart: 1,
             selectionEnd: 1 + text.length,
           };
+        },
+      },
+      {
+        label: copy.toolbarItalicLabel,
+        title: copy.toolbarItalicTitle,
+        insert: (selectedText) => {
+          const text = selectedText || copy.toolbarItalicPlaceholder;
+          return {
+            text: `*${text}*`,
+            selectionStart: 1,
+            selectionEnd: 1 + text.length,
+          };
+        },
+      },
+      {
+        label: copy.toolbarCodeLabel,
+        title: copy.toolbarCodeTitle,
+        insert: (selectedText) => {
+          const text = selectedText || copy.toolbarCodePlaceholder;
+          return {
+            text: `\`${text}\``,
+            selectionStart: 1,
+            selectionEnd: 1 + text.length,
+          };
+        },
+      },
+      {
+        label: copy.toolbarQuoteLabel,
+        title: copy.toolbarQuoteTitle,
+        insert: (selectedText) => {
+          const text = selectedText || copy.toolbarQuotePlaceholder;
+          const lines = text.split("\n");
+          const quoted = lines.map((line) => `> ${line}`).join("\n");
+          return { text: `${quoted}\n\n` };
+        },
+      },
+      {
+        label: copy.toolbarHrLabel,
+        title: copy.toolbarHrTitle,
+        insert: (_selectedText) => {
+          return { text: "\n---\n" };
         },
       },
     ];
