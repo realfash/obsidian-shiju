@@ -6,6 +6,13 @@ The format follows a simple Keep a Changelog style and uses semantic versioning.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-09
+
+### Fixed
+
+- Concurrent write race condition: reverted to `vault.process()` atomic read-modify-write in daily note saving, eliminating silent data loss risk when near-simultaneous captures occur
+- Ribbon tooltip now updates immediately when switching language in settings
+
 ## [0.3.0] - 2026-06-09
 
 ### Added

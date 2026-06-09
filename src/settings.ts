@@ -45,6 +45,7 @@ export class MobileDailyCaptureSettingTab extends PluginSettingTab {
             settings.language = value as MobileDailyCaptureSettings["language"];
             await this.plugin.saveSettings();
             this.display();
+            this.plugin.updateRibbonTooltip();
           }),
       );
 

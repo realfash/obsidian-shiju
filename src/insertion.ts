@@ -7,10 +7,6 @@ export interface InsertionResult {
   insertedLine?: number;
 }
 
-type PreparedInsertion = InsertionResult & {
-  content: string;
-};
-
 export async function appendCaptureToDailyNote(
   app: App,
   file: TFile,
@@ -22,14 +18,18 @@ export async function appendCaptureToDailyNote(
     throw new Error("Capture content is empty.");
   }
 
-  const content = await app.vault.read(file);
   const block = buildCaptureBlock(normalizedInput, settings);
-  const result = await insertIntoHeading(content, settings.targetHeading, block, settings.createHeadingIfMissing);
+  let capturedLine: number | undefined;
 
-  await app.vault.modify(file, result.content);
+  await app.vault.process(file, (data: string) => {
+    const result = insertIntoHeading(data, settings.targetHeading, block, settings.createHeadingIfMissing);
+    capturedLine = result.insertedLine;
+    return result.newContent;
+  });
+
   return {
-    success: result.success,
-    insertedLine: result.insertedLine,
+    success: true,
+    insertedLine: capturedLine,
   };
 }
 
@@ -59,12 +59,12 @@ function buildCaptureBlock(input: string, settings: MobileDailyCaptureSettings):
   return `${taskLines.join("\n")}\n`;
 }
 
-async function insertIntoHeading(
+function insertIntoHeading(
   content: string,
   headingName: string,
   block: string,
   createHeadingIfMissing: boolean,
-): Promise<PreparedInsertion> {
+): { newContent: string; insertedLine?: number } {
   const normalized = normalizeNewlines(content);
   const heading = headingName.trim().replace(/^#+\s*/, "");
   const lines = normalized.length ? normalized.split("\n") : [];
@@ -106,19 +106,17 @@ async function insertIntoHeading(
   const mergedSection = normalizeSectionWithBlock(sectionLines, block);
   const insertedLine = startIndex + 1 + getLinesBeforeBlockInSection(sectionLines);
   return {
-    success: true,
     insertedLine,
-    content: [...before, ...mergedSection, ...after].join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n",
+    newContent: [...before, ...mergedSection, ...after].join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n",
   };
 }
 
-function appendHeadingBlock(content: string, heading: string, block: string): PreparedInsertion {
+function appendHeadingBlock(content: string, heading: string, block: string): { newContent: string; insertedLine?: number } {
   const prefix = content.trimEnd();
   const parts = prefix ? [prefix, "", `## ${heading}`, "", block.trimEnd()] : [`## ${heading}`, "", block.trimEnd()];
   return {
-    success: true,
     insertedLine: prefix ? prefix.split("\n").length + 3 : 2,
-    content: `${parts.join("\n")}\n`,
+    newContent: `${parts.join("\n")}\n`,
   };
 }
 

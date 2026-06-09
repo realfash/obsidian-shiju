@@ -6,12 +6,13 @@ import type { MobileDailyCaptureSettings } from "./src/types";
 
 export default class MobileDailyCapturePlugin extends Plugin {
   settings: MobileDailyCaptureSettings = DEFAULT_SETTINGS;
+  ribbonIconEl?: HTMLElement;
 
   async onload(): Promise<void> {
     await this.loadSettings();
-    const copy = t(this.settings);
+    const copy = this.getCopy();
 
-    this.addRibbonIcon("square-pen", copy.openCapture, () => {
+    this.ribbonIconEl = this.addRibbonIcon("square-pen", copy.openCapture, () => {
       void this.openCaptureModal();
     });
 
@@ -37,6 +38,16 @@ export default class MobileDailyCapturePlugin extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+  }
+
+  getCopy(): ReturnType<typeof t> {
+    return t(this.settings);
+  }
+
+  updateRibbonTooltip(): void {
+    if (this.ribbonIconEl) {
+      this.ribbonIconEl.ariaLabel = this.getCopy().openCapture;
+    }
   }
 
   async openCaptureModal(): Promise<void> {
